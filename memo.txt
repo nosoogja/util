@@ -1,0 +1,298 @@
+---LighterService.cs--------------------------------------------
+24
+        public int Brightness1 { get; set; }
+        public int Brightness2 { get; set; }
+        public int Brightness3 { get; set; }
+        public int Brightness4 { get; set; }
+
+74
+                if (sPort.IsOpen)
+                {
+                    sPort.WriteLine(string.Format("L01W{0:000}", Brightness1));
+                    sPort.WriteLine(string.Format("L02W{0:000}", Brightness2));
+                    sPort.WriteLine(string.Format("L03W{0:000}", Brightness3));
+                    sPort.WriteLine(string.Format("L04W{0:000}", Brightness4));
+                }
+109
+        int Brightness1 { get; set; }
+        int Brightness2 { get; set; }
+        int Brightness3 { get; set; }
+        int Brightness4 { get; set; }
+
+---IAppSetting.cs-------------------------------------------------------
+52
+        [Option(Alias = "Lighter.Brightness1")]
+        int Brightness1 { get; set; }
+        [Option(Alias = "Lighter.Brightness2")]
+        int Brightness2 { get; set; }
+        [Option(Alias = "Lighter.Brightness3")]
+        int Brightness3 { get; set; }
+        [Option(Alias = "Lighter.Brightness4")]
+        int Brightness4 { get; set; }
+
+
+
+---MainWindowViewModel.cs-------------------------------------------------------
+117
+        // segment 4개를 사용함으로서 화면에 4개다 값을 표시해야 되서 string으로 추가함.
+        private string brightnessDisp;
+        public string BrightnessDisp
+        {
+            get{ return brightnessDisp;}
+            set { SetProperty(ref brightnessDisp, value); }
+        }
+
+429
+    this.BrightnessDisp = $"{_lighterService.Brightness1}, {_lighterService.Brightness2}, {_lighterService.Brightness3}, {_lighterService.Brightness4}";
+
+487
+    _lighterService.Brightness1 = AppSetting.Brightness1;
+            _lighterService.Brightness2 = AppSetting.Brightness2;
+            _lighterService.Brightness3 = AppSetting.Brightness3;
+            _lighterService.Brightness4 = AppSetting.Brightness4;
+            // mhoon: 초기값을 메인 화면에 표시하기 위해 이벤트 호출.
+            EventAggregator.GetEvent<BrightUpdateEvent>().Publish(0);
+    
+---ShellLightFlyoutViewModel.cs-------------------------------------------------------
+        //private int lighter = 120;
+        //public int Lighter
+        //{
+        //    get { return lighter; }
+        //    set {
+        //        SetProperty(ref lighter, value);
+        //        AppSetting.Brightness = value;
+        //        EventAggregator.GetEvent<BrightUpdateEvent>().Publish(value);
+        //    }
+        //}
+        private int lighter1 = 120;
+        public int Lighter1
+        {
+            get { return lighter1; }
+            set
+            {
+                SetProperty(ref lighter1, value);
+                AppSetting.Brightness1 = value;
+                EventAggregator.GetEvent<BrightUpdateEvent>().Publish(value);
+            }
+        }
+        private int lighter2 = 120;
+        public int Lighter2
+        {
+            get { return lighter2; }
+            set
+            {
+                SetProperty(ref lighter2, value);
+                AppSetting.Brightness2 = value;
+                EventAggregator.GetEvent<BrightUpdateEvent>().Publish(value);
+            }
+        }
+        private int lighter3 = 120;
+        public int Lighter3
+        {
+            get { return lighter3; }
+            set
+            {
+                SetProperty(ref lighter3, value);
+                AppSetting.Brightness3 = value;
+                EventAggregator.GetEvent<BrightUpdateEvent>().Publish(value);
+            }
+        }
+        private int lighter4 = 120;
+        public int Lighter4
+        {
+            get { return lighter4; }
+            set
+            {
+                SetProperty(ref lighter4, value);
+                AppSetting.Brightness4 = value;
+                EventAggregator.GetEvent<BrightUpdateEvent>().Publish(value);
+            }
+        }
+        
+        
+175
+                public DelegateCommand CmdOn =>
+            cmdOn ?? (cmdOn = new DelegateCommand(() =>
+            {
+                _LighterService.Brightness1 = Lighter1;
+                _LighterService.Brightness2 = Lighter2;
+                _LighterService.Brightness3 = Lighter3;
+                _LighterService.Brightness4 = Lighter4;
+                _LighterService.On();
+
+                //mhoon: 입력 버튼이 click될때 이벤트를 호출하는게 맞는거 같다.
+                EventAggregator.GetEvent<BrightUpdateEvent>().Publish(0);
+
+            }));
+
+197
+        public ShellLightFlyoutViewModel(ILighter lighterService)
+        {
+            _LighterService = lighterService;
+            if (System.IO.Ports.SerialPort.GetPortNames() != null)
+            {
+                CmbContent = new ObservableCollection<string>();
+                CmbContent.AddRange(System.IO.Ports.SerialPort.GetPortNames().ToList());
+            }
+            AppSetting = MyAppInfo.Instance().AppSetting;
+            ComPort = AppSetting.ComPort;
+            Baudrate = AppSetting.Baudrate;
+            Parity = AppSetting.Parity;
+            DataBits = AppSetting.DataBits;
+            StopBits = AppSetting.StopBits;
+
+            Lighter1 = AppSetting.Brightness1;
+            Lighter2 = AppSetting.Brightness2;
+            Lighter3 = AppSetting.Brightness3;
+            Lighter4 = AppSetting.Brightness4;
+
+        }
+
+---MainWindow.xaml-------------------------------------------------------
+255
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="10*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="1.7*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="1.1*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="1.7*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+289
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconFontAwesome Width="24" Height="24" Margin="0,0,5,0"
+                            HorizontalAlignment="Center" VerticalAlignment="Center" Kind="MedappsBrands"
+                            Foreground="{Binding LighterConnectionState, Converter={StaticResource plcstate}}"/>
+                        <TextBlock Text="{Binding BrightnessDisp}" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+---ShellLightFlyout.xaml-------------------------------------------------------
+51
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0">
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="50"/>
+                        <ColumnDefinition Width="50"/>
+                        <ColumnDefinition Width="50"/>
+                        <ColumnDefinition Width="50"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center">
+                        <TextBlock Text="Seg1" HorizontalAlignment="Center"/>
+                        <TextBox Text="{Binding Lighter1}" Foreground="White" Width="40"  Margin="0,1,0,0"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Orientation="Vertical" VerticalAlignment="Center">
+                        <TextBlock Text="Seg2" HorizontalAlignment="Center"/>
+                        <TextBox Text="{Binding Lighter2}" Foreground="White" Width="40"  Margin="0,1,0,0"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="3" Orientation="Vertical" VerticalAlignment="Center">
+                        <TextBlock Text="Seg3" HorizontalAlignment="Center"/>
+                        <TextBox Text="{Binding Lighter3}" Foreground="White" Width="40"  Margin="0,1,0,0"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="4" Orientation="Vertical" VerticalAlignment="Center">
+                        <TextBlock Text="Seg4" HorizontalAlignment="Center"/>
+                        <TextBox Text="{Binding Lighter4}" Foreground="White" Width="40"  Margin="0,1,0,0"/>
+                    </StackPanel>
+                        <!--
+                    <WrapPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                        
+                            <TextBox Text="{Binding Lighter2}" Width="40"  Margin="5,0,0,0"/>
+                            <TextBox Text="{Binding Lighter3}" Width="40"  Margin="5,0,0,0"/>
+                            <TextBox Text="{Binding Lighter4}" Width="40"  Margin="5,0,0,0"/>
+                            
+                        </StackPanel>
+                    </WrapPanel>
+                    -->
+
+                    <!--    
+                    <Slider TickPlacement="BottomRight" TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center" Maximum="255" Name="s1Value" Width="260" Value="{Binding Lighter}" />
+                    -->
+                </Grid>
+                <WrapPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+----------------------------------------------------------
+----------------------------------------------------------
+----------------------------------------------------------
+----------------------------------------------------------
+----------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------------------------------
+----------------------------------------------------------
+----------------------------------------------------------
