@@ -6,6 +6,7 @@
         public int Brightness4 { get; set; }
 
 74
+
                 if (sPort.IsOpen)
                 {
                     sPort.WriteLine(string.Format("L01W{0:000}", Brightness1));
